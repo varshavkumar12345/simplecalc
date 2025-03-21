@@ -2,8 +2,10 @@
 FROM node:18 AS builder
 WORKDIR /app
 
-# Copy and install Node.js dependencies
-COPY package*.json ./
+# Ensure package.json is copied correctly
+COPY ./package.json ./package.json
+COPY ./package-lock.json ./package-lock.json  # If using npm v7+
+
 RUN npm install && npm install -g serve && npm run build
 
 # Stage 2: Use Python as the final base image
@@ -15,7 +17,8 @@ WORKDIR /app
 COPY --from=builder /app/build ./build
 
 # Copy Python application files
-COPY ./app.py ./app.py
+COPY app /app.py
+COPY requirements /requirements.txt
 
 # Install Python dependencies
 RUN pip install -r /requirements.txt
