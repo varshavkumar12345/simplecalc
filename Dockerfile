@@ -1,23 +1,24 @@
-# Use official Python image as base
-FROM python:3.9
-
-# Set the working directory
+# Stage 1: Build with Node.js
+FROM node:18 AS builder
 WORKDIR /app
 
-# Copy the app package and package-lock.json file
+# Copy and install Node.js dependencies
 COPY package*.json ./
+RUN npm install && npm install -g serve && npm run build
 
-# Copy local directories to the current local directory of our docker image (/app)
-COPY ./index.html ./index.html
+# Stage 2: Use Python as the final base image
+FROM python:3.9
 
+WORKDIR /app
 
-# Install node packages, install serve, build the app, and remove dependencies at the end
-RUN npm install \
-    && npm install -g serve \
-    && npm run build \
-    && rm -fr node_modules
+# Copy built frontend from the Node.js stage
+COPY --from=builder /app/build ./build
 
-EXPOSE 3000
+# Copy Python application files
+COPY app /app.py
+COPY requirements /requirements.txt
 
-# Define the command to run the application
-CMD ["python", "app.py"]
+# Install Python dependencies
+RUN pip install -r /requirements.txt
+
+CMD ["python", "/app.py"]
