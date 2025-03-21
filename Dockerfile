@@ -15,8 +15,7 @@ WORKDIR /app
 COPY --from=builder /app/build ./build
 
 # Copy Python application files
-COPY app /app.py
-COPY requirements /requirements.txt
+COPY ./app.py ./app.py
 
 # Install Python dependencies
 RUN pip install -r /requirements.txt
