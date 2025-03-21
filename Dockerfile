@@ -8,9 +8,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # Copy local directories to the current local directory of our docker image (/app)
-COPY ./app /app
-COPY ./requirements /requirements
-
+COPY app /app.py
+COPY requirements /requirements.txt
 
 # Install node packages, install serve, build the app, and remove dependencies at the end
 RUN npm install \
