@@ -1,26 +1,28 @@
-# Stage 1: Build with Node.js
-FROM node:18 AS builder
+# Use Node.js for frontend if required
+FROM node:18 AS frontend
+
 WORKDIR /app
 
-# Ensure package.json is copied correctly
-COPY ./package.json ./package.json
-COPY ./package-lock.json ./package-lock.json  # If using npm v7+
+# Copy and install frontend dependencies
+COPY package.json ./
+RUN npm install
 
-RUN npm install && npm install -g serve && npm run build
+# Copy rest of the frontend files
+COPY . .
 
-# Stage 2: Use Python as the final base image
+# Build frontend (adjust as needed)
+RUN npm run build
+
+# Backend
 FROM python:3.9
 
 WORKDIR /app
 
-# Copy built frontend from the Node.js stage
-COPY --from=builder /app/build ./build
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy Python application files
-COPY app /app.py
-COPY requirements /requirements.txt
+COPY --from=frontend /app /app
 
-# Install Python dependencies
-RUN pip install -r /requirements.txt
+EXPOSE 5000
 
-CMD ["python", "/app.py"]
+CMD ["python", "app.py"]
